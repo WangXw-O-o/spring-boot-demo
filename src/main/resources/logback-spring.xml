@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- scan 当设置为true时，配置文件发生变更，就会重新加载 -->
+<!-- scanPeriod 监测配置文件是否变更的间隔时间 -->
+<!-- debug 打印logback本身的日志信息 -->
+<configuration scan="true" scanPeriod="5 seconds" debug="false">
+    <!-- 定义日志存放目录 -->
+    <property name="logPath" value="/opt/logs/spring-boot-demo"/>
+    <!-- 日志输出的格式-->
+    <property name="PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t-%L] %-5level %logger{36} %L %M - %msg%xEx%n"/>
+    <contextName>logback</contextName>
+
+    <!-- 输出到控制台 ConsoleAppender-->
+    <appender name="consoleLog" class="ch.qos.logback.core.ConsoleAppender">
+        <!--展示格式 layout-->
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>${PATTERN}</pattern>
+        </layout>
+        <!--过滤器，只有过滤到指定级别的日志信息才会输出，如果level为ERROR，那么控制台只会输出ERROR日志-->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
+    </appender>
+
+    <appender name="allLogFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${logPath}/all.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${logPath}/all_%d{yyyy-MM-dd}.log</FileNamePattern>
+            <maxHistory>90</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>${PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="serviceLogFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 不输出 error 日志 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <!--过滤 Error-->
+            <level>Error</level>
+            <!--匹配到就禁止-->
+            <onMatch>DENY</onMatch>
+            <!--没有匹配到就允许-->
+            <onMismatch>ACCEPT</onMismatch>
+        </filter>
+        <File>${logPath}/service.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${logPath}/service_%d{yyyy-MM-dd}.log</FileNamePattern>
+            <maxHistory>90</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>${PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="coreLogFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 不输出 error 日志 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <!--过滤 Error-->
+            <level>Error</level>
+            <!--匹配到就禁止-->
+            <onMatch>DENY</onMatch>
+            <!--没有匹配到就允许-->
+            <onMismatch>ACCEPT</onMismatch>
+        </filter>
+        <File>${logPath}/core.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${logPath}/core_%d{yyyy-MM-dd}.log</FileNamePattern>
+            <maxHistory>90</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>${PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!--输出ERROR日志到指定的文件中-->
+    <appender name="fileErrorLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!--    只打印 error 日志    -->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>Error</level>
+        </filter>
+        <File>${logPath}/error.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 指定到error开头的文件中 -->
+            <FileNamePattern>${logPath}/error_%d{yyyy-MM-dd}.log</FileNamePattern>
+            <maxHistory>90</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>${PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!--指定最基础的日志输出级别，未指定 appender-ref 的包下的日志都会打印在 root 下的 appender-ref 中-->
+    <root level="INFO">
+        <appender-ref ref="allLogFile"/>
+        <appender-ref ref="consoleLog"/>
+    </root>
+
+    <!--  指定包下的日志打印到什么位置。
+            additivity （可加性） :
+                false —— 不可加，即 当前包的日志只打印到设置的appender下
+                true  —— 可加，即 当前包的日志会在当前包中也打印一份
+            level : 指定要打印的日志级别
+    -->
+    <!--  com.wxw.springbootdemo 包下的 INFO 日志都会在 allLogFile 中打印一份， ERROR日志也会在 fileErrorLog 中打印一份 -->
+    <!--  子包的设置优先级高于父包 -->
+    <logger name="com.wxw.springbootdemo" additivity="false" level="INFO">
+        <appender-ref ref="allLogFile"/>
+        <appender-ref ref="fileErrorLog"/>
+    </logger>
+
+    <!--  com.wxw.springbootdemo.service 包下的 INFO 日志都会在 serviceLogFile 中打印一份-->
+    <logger name="com.wxw.springbootdemo.service" additivity="true" level="INFO">
+        <appender-ref ref="serviceLogFile"/>
+    </logger>
+
+    <!--  com.wxw.springbootdemo.service 包下的 INFO 日志 只会在 coreLogFile 中打印，不会再在 allLogFile 中打印了-->
+    <!--  即设定了 additivity="false" 之后，需要打印的日志必须指定 -->
+    <logger name="com.wxw.springbootdemo.core" additivity="false" level="INFO">
+        <appender-ref ref="coreLogFile"/>
+        <!--   在  additivity="false" 的情况下，想要将日志也打印一份到 allLogFile 中，可以再指定一下 <appender-ref ref="allLogFile"/> -->
+        <appender-ref ref="allLogFile"/>
+        <!--   将 error 日志打印到error文件中    -->
+        <appender-ref ref="fileErrorLog"/>
+    </logger>
+
+
+    <!--  没有指定 appender-ref，就使用root的配置。 level 优先级高于 root 上的优先级-->
+    <logger name="org.springframework" level="INFO" />
+</configuration>
