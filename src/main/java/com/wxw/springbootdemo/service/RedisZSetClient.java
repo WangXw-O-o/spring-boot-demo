@@ -11,4 +11,8 @@ public interface RedisZSetClient {
 
     Set<String> getAllValues(String key);
 
+    Double getZSetMemberScore(String key, String memberKey);
+
+    void incrZSetMemberScore(String key, String memberKey, Double score);
+
 }
