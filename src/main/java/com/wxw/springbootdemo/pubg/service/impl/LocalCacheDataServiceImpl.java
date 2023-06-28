@@ -26,11 +26,12 @@ public class LocalCacheDataServiceImpl implements CacheDataService {
     //积分缓存排名
     private final TreeMap<String, String> rankTreeMap = new TreeMap<>();
     //存活队伍数量
-    private final AtomicInteger aliveTeam = new AtomicInteger(16);
+    private final AtomicInteger aliveTeam = new AtomicInteger();
 
     @Override
     public void initTeamCache(String key, List<ActualTimeTeamInfo> teamInfoList) {
         teamInfoList.forEach((teamInfo) -> teamInfoHashMap.put(teamInfo.getId(), teamInfo));
+        aliveTeam.set(teamInfoList.size());
     }
 
     @Override

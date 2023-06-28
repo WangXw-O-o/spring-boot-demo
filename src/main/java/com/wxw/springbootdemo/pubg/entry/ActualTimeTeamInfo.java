@@ -30,6 +30,13 @@ public class ActualTimeTeamInfo {
 
     public void reduceSurvivalCount() {
         this.survivalCount--;
+        this.injuredCount++;
+    }
+
+    public void updateAfterTeamOut() {
+        this.survivalCount = 0;
+        this.injuredCount = 0;
+        this.deathCount = 4;
     }
 
     public void addTotalScore(int score) {
