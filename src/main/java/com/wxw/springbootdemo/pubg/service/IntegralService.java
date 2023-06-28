@@ -14,7 +14,7 @@ public interface IntegralService {
     /**
      * 初始化积分(构建一个当前的积分统计集合)
      */
-    void initIntegral(String key, Set<ActualTimeTeamInfo> list);
+    void initIntegral(String key, List<ActualTimeTeamInfo> list);
 
     /**
      * 更新队伍信息（积分）

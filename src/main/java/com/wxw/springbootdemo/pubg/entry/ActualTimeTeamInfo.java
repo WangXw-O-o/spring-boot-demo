@@ -28,4 +28,16 @@ public class ActualTimeTeamInfo {
     //当前排名
     private int rank;
 
+    public void reduceSurvivalCount() {
+        this.survivalCount--;
+    }
+
+    public void addTotalScore(int score) {
+        this.totalScore += score;
+    }
+
+    public boolean isOut() {
+        return this.survivalCount == 0;
+    }
+
 }

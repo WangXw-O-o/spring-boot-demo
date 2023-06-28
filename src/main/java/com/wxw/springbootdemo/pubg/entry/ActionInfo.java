@@ -24,4 +24,15 @@ public class ActionInfo implements Serializable {
     //攻击方式
     private String attackMode;
 
+    public ActionInfo() {
+    }
+
+    public ActionInfo(String attackedPlayerId, String attackedPlayerTeamId, String beAttackedPlayerId, String beAttackedPlayerTeamId, String attackResult, String attackMode) {
+        this.attackedPlayerId = attackedPlayerId;
+        this.attackedPlayerTeamId = attackedPlayerTeamId;
+        this.beAttackedPlayerId = beAttackedPlayerId;
+        this.beAttackedPlayerTeamId = beAttackedPlayerTeamId;
+        this.attackResult = attackResult;
+        this.attackMode = attackMode;
+    }
 }
