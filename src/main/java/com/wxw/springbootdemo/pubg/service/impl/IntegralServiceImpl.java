@@ -127,17 +127,34 @@ public class IntegralServiceImpl implements IntegralService {
                 });
     }
 
-    private int getRankScore(int count) {
-        if (count > 8) {
+    /**
+     * 排名分：
+     * 1： 10 分   1 0 1 1 1 1 1 4
+     * 2： 6 分    1 0 1 1 1 1 1
+     * 3： 5 分    1 0 1 1 1 1
+     * 4： 4 分    1 0 1 1 1
+     * 5： 3 分    1 0 1 1
+     * 6： 2 分    1 0 1
+     * 7： 1 分    1 0
+     * 8： 1 分    1
+     * 9 - 16： 0 分
+     * 加积分规则：每次有队伍被淘汰，需要给剩余的队伍加上积分，每次都要加上最低的分
+     * @param aliveTeamCount 存活队伍数量
+     * @return
+     */
+    private int getRankScore(int aliveTeamCount) {
+        if (aliveTeamCount > 8) {
             return 0;
-        } else if (count > 1) {
-            // 第8名开始每轮每队都会加1分
-            if (count == 7) {
-                return 0; // 第七名不需要多加分
-            }
-            return 1;
-        } else {
-            return 3; // 最后获得第一的多加3分排名分
         }
+        if (aliveTeamCount == 8) {
+            return 1;
+        }
+        if (aliveTeamCount == 7) {
+            return 0;
+        }
+        if (aliveTeamCount != 1) {
+            return 1;
+        }
+        return 4;
     }
 }

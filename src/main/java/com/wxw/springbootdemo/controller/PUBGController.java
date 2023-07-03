@@ -23,20 +23,21 @@ public class PUBGController {
         List<ActualTimeTeamInfo> teams = createTeams();
         integralService.initTeamInfo(null, teams);
         gameStart("1", "2");
+        gameStart("1", "3");
         gameStart("1", "4");
-        gameStart("1", "11");
-        gameStart("1", "12");
-        gameStart("6", "10");
-        gameStart("5", "6");
-        gameStart("4", "5");
-        gameStart("7", "8");
-        gameStart("7", "9");
-        gameStart("3", "1");
-        gameStart("3", "7");
-        gameStart("13", "3");
-        gameStart("13", "14");
-        gameStart("13", "15");
-        gameStart("16", "13");
+        gameStart("1", "5");
+        gameStart("6", "1");
+        gameStart("6", "7");
+        gameStart("6", "8");
+        gameStart("6", "9");  //第8
+        gameStart("10", "6");
+        gameStart("10", "11");
+        gameStart("10", "12");
+        gameStart("13", "10"); //第 4
+        gameStart("14", "13");
+        gameStart("15", "14");
+        gameStart("16", "15");
+
     }
 
     private List<ActualTimeTeamInfo> createTeams() {
