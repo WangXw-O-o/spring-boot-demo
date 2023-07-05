@@ -20,16 +20,15 @@ public class IntegralServiceImpl implements IntegralService {
     @Qualifier("localCacheDataService")
     private CacheDataService cacheDataService;
 
-
     @Override
-    public void initTeamInfo(String key, List<ActualTimeTeamInfo> list) {
-        cacheDataService.initTeamCache(key, list);
+    public void initTeamInfo(List<ActualTimeTeamInfo> list) {
+        cacheDataService.initTeamCache(list);
     }
 
     @Override
-    public List<ActualTimeTeamInfo> getAllTeamRank(String key) {
+    public List<ActualTimeTeamInfo> getAllTeamRank() {
         //计算新排名
-        List<ActualTimeTeamInfo> allTeamInfo = cacheDataService.getAllTeamInfo(key);
+        List<ActualTimeTeamInfo> allTeamInfo = cacheDataService.getAllTeamInfo();
 
         return allTeamInfo.stream()
                 .sorted((o1, o2) -> {
@@ -43,76 +42,71 @@ public class IntegralServiceImpl implements IntegralService {
     }
 
     @Override
-    public ActualTimeTeamInfo getTeamInfo(String key, String teamId) {
-        return cacheDataService.getTeamInfo(key, teamId);
-    }
-
-    @Override
-    public synchronized void countScore(String key, ActionInfo actionInfo) {
+    public synchronized void countScore(ActionInfo actionInfo) {
         log.info("积分计算开始: actionInfo={}", actionInfo.toString());
         if ("击倒".equals(actionInfo.getAttackResult())) {
             //击倒行为：将数据记录到击倒列表中
-            cacheDataService.updateTeamFallDownList(key, actionInfo);
+            cacheDataService.updateTeamFallDownList(actionInfo);
             //被击倒者队伍数据更新
-            updateFallDownInfo(key, actionInfo.getBeAttackedPlayerTeamId());
+            updateFallDownInfo(actionInfo.getBeAttackedPlayerTeamId());
         } else {
             //击杀行为
             //击杀分计算
-            countTeamScoreAfterKill(key, actionInfo);
+            countTeamScoreAfterKill(actionInfo);
             //排名分计算：给所有仍然存活的队伍加上当前的排名分
-            countRankScore(key);
+            countRankScore();
         }
     }
 
-    private void countTeamScoreAfterKill(String key, ActionInfo actionInfo) {
+    private void countTeamScoreAfterKill(ActionInfo actionInfo) {
         //计算击杀分
-        countKillScore(key, actionInfo.getAttackedPlayerTeamId());
+        countKillScore(actionInfo.getAttackedPlayerTeamId());
         //被击杀者若在倒地列表，则移出
-        cacheDataService.remove2TeamFallDownList(key, actionInfo.getBeAttackedPlayerTeamId(), actionInfo.getBeAttackedPlayerId());
+        cacheDataService.remove2TeamFallDownList(actionInfo.getBeAttackedPlayerTeamId(), actionInfo.getBeAttackedPlayerId());
         //被淘汰队伍的所有倒地选手击杀分结算
-        countFallDownScore(key, actionInfo.getBeAttackedPlayerTeamId());
+        countFallDownScore(actionInfo.getBeAttackedPlayerTeamId());
     }
 
     //计算击杀分
-    private void countKillScore(String key, String teamId) {
+    private void countKillScore(String teamId) {
         //击杀者队伍信息
-        ActualTimeTeamInfo attackedTeamInfo = cacheDataService.getTeamInfo(key, teamId);
+        ActualTimeTeamInfo attackedTeamInfo = cacheDataService.getTeamInfo(teamId);
         //击杀者队伍积分+1
         attackedTeamInfo.addTotalScore(1);
         //更新缓存数据
-        cacheDataService.updateTeamInfo(key, attackedTeamInfo);
+        cacheDataService.updateTeamInfo(attackedTeamInfo);
     }
 
-    private void updateFallDownInfo(String key, String teamId) {
+    private void updateFallDownInfo(String teamId) {
         //被击杀者队伍信息
-        ActualTimeTeamInfo beAttackedTeamInfo = cacheDataService.getTeamInfo(key, teamId);
+        ActualTimeTeamInfo beAttackedTeamInfo = cacheDataService.getTeamInfo(teamId);
         //存活人数-1
         beAttackedTeamInfo.reduceSurvivalCount();
-        cacheDataService.updateTeamInfo(key, beAttackedTeamInfo);
+        cacheDataService.updateTeamInfo(beAttackedTeamInfo);
     }
 
     //被淘汰队伍的所有倒地选手击杀分结算
-    private void countFallDownScore(String key, String teamId) {
-        updateFallDownInfo(key, teamId);
+    private void countFallDownScore(String teamId) {
+        updateFallDownInfo(teamId);
         //队伍被淘汰结算
-        if (cacheDataService.getTeamInfo(key, teamId).isOut()) {
-            outTeamSettlement(key, teamId);
+        if (cacheDataService.getTeamInfo(teamId).isOut()) {
+            outTeamSettlement(teamId);
         }
     }
 
     //淘汰队伍结算
-    private void outTeamSettlement(String key, String teamId) {
+    private void outTeamSettlement(String teamId) {
         //存活队伍数量-1
         cacheDataService.reduceAliveTeamCount();
         //历史倒地结算
-        List<ActionInfo> teamFallDownList = cacheDataService.getTeamFallDownList(key, teamId);
+        List<ActionInfo> teamFallDownList = cacheDataService.getTeamFallDownList(teamId);
         if (teamFallDownList != null && teamFallDownList.size() != 0) {
             //击杀分归属于攻击者队伍
-            teamFallDownList.forEach((actionInfo -> countKillScore(key, actionInfo.getAttackedPlayerTeamId())));
+            teamFallDownList.forEach((actionInfo -> countKillScore(actionInfo.getAttackedPlayerTeamId())));
         }
     }
 
-    private void countRankScore(String key) {
+    private void countRankScore() {
         //排名分计算
         int rankScore = getRankScore(cacheDataService.getAliveTeamCount());
         log.info("当前排名分[{}]", rankScore);
@@ -120,7 +114,7 @@ public class IntegralServiceImpl implements IntegralService {
             return;
         }
         //获取所有的队伍信息，给每个未淘汰队伍都加上排名分
-        cacheDataService.getAllTeamInfo(key).forEach(teamInfo -> {
+        cacheDataService.getAllTeamInfo().forEach(teamInfo -> {
                     if (!teamInfo.isOut()) {
                         teamInfo.addTotalScore(rankScore);
                     }

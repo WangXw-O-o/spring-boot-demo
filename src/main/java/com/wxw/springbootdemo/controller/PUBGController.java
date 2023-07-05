@@ -21,7 +21,7 @@ public class PUBGController {
     @GetMapping("/test")
     public void test() {
         List<ActualTimeTeamInfo> teams = createTeams();
-        integralService.initTeamInfo(null, teams);
+        integralService.initTeamInfo(teams);
         gameStart("1", "2");
         gameStart("1", "3");
         gameStart("1", "4");
@@ -62,8 +62,8 @@ public class PUBGController {
     private void sendAction(String attackedPlayerId, String attackedPlayerTeamId, String beAttackedPlayerId, String beAttackedPlayerTeamId, String attackResult, String attackMode) {
         ActionInfo actionInfo_1 = new ActionInfo(attackedPlayerId, attackedPlayerTeamId, beAttackedPlayerId, beAttackedPlayerTeamId, attackResult, attackMode);
         System.out.println(attackedPlayerId + " " + attackResult + " " + beAttackedPlayerId);
-        integralService.countScore(null, actionInfo_1);
-        List<ActualTimeTeamInfo> allTeamRank = integralService.getAllTeamRank(null);
+        integralService.countScore(actionInfo_1);
+        List<ActualTimeTeamInfo> allTeamRank = integralService.getAllTeamRank();
         System.out.println("----------------------------");
         System.out.println("--队名-------存活数--------积分--");
         allTeamRank.forEach(teamInfo -> System.out.println(
